@@ -163,7 +163,11 @@ main(void)
       cmd++;
     if (*cmd == '\n') // is a blank command
       continue;
-    if(cmd[0] == 'c' && cmd[1] == 'd' && cmd[2] == ' '){
+    cmd[strlen(cmd)-1] = 0;
+    if(strcmp(cmd, "wait") == 0){
+   	 while(wait(0) > 0);
+  	}
+    else if(cmd[0] == 'c' && cmd[1] == 'd' && cmd[2] == ' '){
       // Chdir must be called by the parent, not the child.
       cmd[strlen(cmd)-1] = 0;  // chop \n
       if(chdir(cmd+3) < 0)

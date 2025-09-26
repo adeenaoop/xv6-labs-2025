@@ -182,6 +182,7 @@ UPROGS=\
 	$U/_grep\
 	$U/_uptime\
 	$U/_init\
+	$U/_find\
 	$U/_kill\
 	$U/_ln\
 	$U/_ls\

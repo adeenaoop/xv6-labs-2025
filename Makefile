@@ -184,6 +184,7 @@ UPROGS=\
 	$U/_init\
 	$U/_kill\
 	$U/_ln\
+	$U/_sleep\
 	$U/_ls\
 	$U/_mkdir\
 	$U/_rm\

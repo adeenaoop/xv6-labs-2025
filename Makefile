@@ -180,6 +180,7 @@ UPROGS=\
 	$U/_echo\
 	$U/_forktest\
 	$U/_grep\
+	$U/_sixfive\
 	$U/_uptime\
 	$U/_init\
 	$U/_kill\

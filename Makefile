@@ -179,6 +179,7 @@ UPROGS=\
 	$U/_cat\
 	$U/_echo\
 	$U/_forktest\
+	$U/_xargs\
 	$U/_grep\
 	$U/_sixfive\
 	$U/_uptime\
@@ -189,6 +190,7 @@ UPROGS=\
 	$U/_ls\
 	$U/_mkdir\
 	$U/_rm\
+	$U/_find\
 	$U/_sh\
 	$U/_stressfs\
 	$U/_usertests\

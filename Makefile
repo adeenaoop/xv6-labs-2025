@@ -184,10 +184,13 @@ UPROGS=\
 	$U/_kill\
 	$U/_ln\
 	$U/_ls\
+	$U/_pingpong\
 	$U/_mkdir\
+	$U/_test\
 	$U/_rm\
 	$U/_sh\
 	$U/_stressfs\
+        $U/_sandbox\
 	$U/_usertests\
 	$U/_grind\
 	$U/_wc\

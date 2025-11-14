@@ -105,3 +105,25 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+uint64
+sys_getsyscallcount(void)
+{
+   struct proc *p = myproc();
+   return p->syscall_count;
+}
+uint64
+sys_interpose(void)
+{
+  int mask;
+  
+  // Get the mask argument
+  argint(0, &mask);
+  
+  // For debugging:
+  // printf("sys_interpose: pid=%d setting mask=0x%x\n", myproc()->pid, mask);
+  
+  struct proc *p = myproc();
+  p->sandbox_mask = mask;
+  
+  return 0;  // Success
+}

@@ -93,6 +93,7 @@ struct proc {
   int pid;                     // Process ID
   int syscall_count;
   int sandbox_mask;
+  char allowed_path[MAXPATH];
   // wait_lock must be held when using this:
   struct proc *parent;         // Parent process
 

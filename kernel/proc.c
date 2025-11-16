@@ -125,6 +125,7 @@ found:
   p->pid = allocpid();
   p->state = USED;
   p->sandbox_mask = 0;
+  safestrcpy(p->allowed_path,"",sizeof(p->allowed_path));
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
     freeproc(p);
@@ -277,7 +278,7 @@ kfork(void)
   *(np->trapframe) = *(p->trapframe);
 
   np->sandbox_mask = p->sandbox_mask;
-
+  safestrcpy(np->allowed_path,p->allowed_path,sizeof(np->allowed_path));
   // Cause fork to return 0 in the child.
   np->trapframe->a0 = 0;
 

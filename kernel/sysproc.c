@@ -115,15 +115,18 @@ uint64
 sys_interpose(void)
 {
   int mask;
+  char path[MAXPATH];
   
-  // Get the mask argument
   argint(0, &mask);
   
-  // For debugging:
-  // printf("sys_interpose: pid=%d setting mask=0x%x\n", myproc()->pid, mask);
+  if(argstr(1, path, sizeof(path)) < 0) {
+    return -1;
+  }
   
   struct proc *p = myproc();
   p->sandbox_mask = mask;
+  safestrcpy(p->allowed_path, path, sizeof(p->allowed_path));
   
-  return 0;  // Success
+  return 0;
 }
+ 

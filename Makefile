@@ -191,6 +191,8 @@ UPROGS=\
 	$U/_sh\
 	$U/_stressfs\
         $U/_sandbox\
+	$U/_attack\
+	$U/_secret\
 	$U/_usertests\
 	$U/_grind\
 	$U/_wc\

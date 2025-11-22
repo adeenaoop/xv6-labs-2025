@@ -140,14 +140,32 @@ walkaddr(pagetable_t pagetable, uint64 va)
   return pa;
 }
 
-
-#if defined(LAB_PGTBL) || defined(SOL_MMAP) || defined(SOL_COW)
-void
-vmprint(pagetable_t pagetable) {
-  // your code here
+static void
+vmprint_recursive(pagetable_t pagetable, uint64 va, int level)
+{
+  for(int i = 0; i < 512; i++){
+    pte_t pte = pagetable[i];
+    if(pte & PTE_V){
+      for(int j = 0; j < level; j++){
+        printf(" ..");
+      }
+      uint64 child = PTE2PA(pte);
+      uint64 new_va = va | ((uint64)i << (9 * (2 - (level - 1))));
+      printf("0x%016lx: pte 0x%016lx pa 0x%016lx\n",
+             new_va, pte, child);
+      if((pte & (PTE_R | PTE_W | PTE_X)) == 0){
+        vmprint_recursive((pagetable_t)child, new_va, level + 1);
+      }
+    }
+  }
 }
-#endif
 
+void
+vmprint(pagetable_t pagetable)
+{
+  printf("page table 0x%016lx\n", (uint64)pagetable);
+  vmprint_recursive(pagetable, 0, 1);
+}
 
 
 // add a mapping to the kernel page table.
@@ -528,7 +546,6 @@ ismapped(pagetable_t pagetable, uint64 va) {
   }
   return 0;
 }
-
 
 
 #ifdef LAB_PGTBL

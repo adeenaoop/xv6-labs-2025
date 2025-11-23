@@ -17,6 +17,25 @@
 
 volatile int panicking = 0; // printing a panic message
 volatile int panicked = 0; // spinning forever at end of a panic
+void
+backtrace(void)
+{
+  printf("backtrace:\n");
+
+  uint64 fp = r_fp();         // current frame pointer
+  uint64 stack_bottom = PGROUNDDOWN(fp);  // page of the current kernel stack
+
+  while(fp >= stack_bottom && fp < stack_bottom + PGSIZE){
+    uint64 ra = *(uint64 *)(fp - 8);   // saved return address
+    printf("%p\n", (void*)ra);
+
+    fp = *(uint64 *)(fp - 16);         // saved frame pointer (caller)
+    if(fp == 0)
+      break;
+  }
+}
+
+
 
 // lock to avoid interleaving concurrent printf's.
 static struct {
@@ -136,9 +155,10 @@ printf(char *fmt, ...)
 void
 panic(char *s)
 {
-  panicking = 1;
   printf("panic: ");
-  printf("%s\n", s);
+  printf(s);
+  printf("\n");
+  backtrace();  // Add this line
   panicked = 1; // freeze uart output from other CPUs
   for(;;)
     ;

@@ -80,3 +80,71 @@ kalloc(void)
     memset((char*)r, 5, PGSIZE); // fill with junk
   return (void*)r;
 }
+
+// Superpage allocation (2MB pages)
+#define SUPERPG_SIZE (2 * 1024 * 1024)
+#define MAX_SUPERPAGES 16
+
+struct {
+  struct spinlock lock;
+  int allocated[MAX_SUPERPAGES];
+  uint64 phys_addrs[MAX_SUPERPAGES];
+} superalloc;
+
+void
+superinit(void)
+{
+  initlock(&superalloc.lock, "superalloc");
+  for(int i = 0; i < MAX_SUPERPAGES; i++) {
+    superalloc.allocated[i] = 0;
+    superalloc.phys_addrs[i] = 0;
+  }
+}
+
+void*
+superalloc_page(void)
+{
+  acquire(&superalloc.lock);
+  
+  for(int i = 0; i < MAX_SUPERPAGES; i++) {
+    if(superalloc.allocated[i] == 0) {
+      superalloc.allocated[i] = 1;
+      // Use a simple addressing scheme for the lab
+      superalloc.phys_addrs[i] = (i + 1) * SUPERPG_SIZE;
+      void *result = (void*)superalloc.phys_addrs[i];
+      release(&superalloc.lock);
+      return result;
+    }
+  }
+  
+  release(&superalloc.lock);
+  return 0;
+}
+
+void
+superfree_page(void *pa)
+{
+  if(pa == 0)
+    return;
+    
+  acquire(&superalloc.lock);
+  
+  uint64 addr = (uint64)pa;
+  for(int i = 0; i < MAX_SUPERPAGES; i++) {
+    if(superalloc.allocated[i] == 1 && superalloc.phys_addrs[i] == addr) {
+      superalloc.allocated[i] = 0;
+      superalloc.phys_addrs[i] = 0;
+      release(&superalloc.lock);
+      return;
+    }
+  }
+  
+  release(&superalloc.lock);
+  panic("superfree_page: invalid superpage");
+}
+
+int
+is_superpage_aligned(void *pa)
+{
+  return ((uint64)pa & (SUPERPG_SIZE - 1)) == 0;
+}

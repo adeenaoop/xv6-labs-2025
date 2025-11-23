@@ -66,6 +66,10 @@ void            ireclaim(int);
 void*           kalloc(void);
 void            kfree(void *);
 void            kinit(void);
+void            superinit(void);
+void*           superalloc_page(void);
+void            superfree_page(void*);
+int             is_superpage_aligned(void*);
 
 // log.c
 void            initlog(int, struct superblock*);

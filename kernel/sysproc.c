@@ -6,6 +6,48 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "vm.h"
+// in kernel/sysproc.c (or a new file if you prefer)
+// sys_sigalarm: arg0 = ticks (int), arg1 = handler (user pointer)
+uint64
+sys_sigalarm(void)
+{
+  int ticks;
+  uint64 handler;
+  struct proc *p = myproc();
+
+  // Now use argint/argaddr
+  argint(0, &ticks);
+  argaddr(1, &handler);
+
+  acquire(&p->lock);
+  if (ticks > 0) {
+    p->alarm_interval = ticks;
+    p->alarm_ticks = ticks;
+    p->alarm_handler = handler;
+    p->inhandler = 0;
+  } else {
+    p->alarm_interval = 0;
+    p->alarm_ticks = 0;
+    p->alarm_handler = 0;
+    p->inhandler = 0;
+  }
+  release(&p->lock);
+
+  return 0;
+}
+uint64
+sys_sigreturn(void)
+{
+    struct proc *p = myproc();
+
+    acquire(&p->lock);
+    memmove(p->trapframe, &p->alarm_tf, sizeof(struct trapframe));
+    p->inhandler = 0;  // allow next alarm
+    release(&p->lock);
+
+    return p->trapframe->a0;
+}
+
 
 uint64
 sys_exit(void)

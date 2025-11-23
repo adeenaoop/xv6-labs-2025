@@ -79,10 +79,40 @@ usertrap(void)
 
   if(killed(p))
     kexit(-1);
+if (which_dev == 2) {  // timer interrupt
+  // existing global tick code (keep it)
+  if (cpuid() == 0) {
+    ticks++;
+    wakeup(&ticks);
+  }
 
-  // give up the CPU if this is a timer interrupt.
-  if(which_dev == 2)
-    yield();
+  // per-process alarm handling
+  struct proc *p = myproc();
+  if (p && p->alarm_interval > 0) {
+    acquire(&p->lock);
+    if (p->alarm_interval > 0) {
+      p->alarm_ticks--;
+      if (p->alarm_ticks <= 0 && !p->inhandler && p->alarm_handler != 0) {
+        // prevent re-entrant entry as early as possible:
+        p->inhandler = 1;
+
+        // save full user registers/trapframe
+        memmove(&p->alarm_tf, p->trapframe, sizeof(struct trapframe));
+
+        // cause user to run handler next
+        p->trapframe->epc = p->alarm_handler;
+
+        // re-arm for next time
+        p->alarm_ticks = p->alarm_interval;
+
+      }
+    }
+    release(&p->lock);
+  }
+
+  // then yield as previously done
+  yield();
+}
 
   prepare_return();
 

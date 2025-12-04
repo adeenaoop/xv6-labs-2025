@@ -43,4 +43,8 @@ entry("sbrk");
 entry("pause");
 entry("uptime");
 entry("sigalarm");
-entry("sigreturn")
+entry("sigreturn");
+entry("getprocinfo");
+entry("boostproc");
+entry("sleep")
+

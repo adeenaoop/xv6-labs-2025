@@ -1,3 +1,4 @@
+
 #include "types.h"
 #include "riscv.h"
 #include "defs.h"
@@ -5,9 +6,91 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
-#include "vm.h"
-// in kernel/sysproc.c (or a new file if you prefer)
-// sys_sigalarm: arg0 = ticks (int), arg1 = handler (user pointer)
+void mlfq_boost(void);
+
+struct uprocinfo {
+  int pid;
+  int state;
+  int cur_q;
+  int qtick;
+  int total_ticks;
+  char name[16];
+};
+extern struct proc proc[NPROC];
+// sys_getprocinfo: copy info of all processes to user-space
+uint64
+sys_getprocinfo(void)
+{
+    struct uprocinfo info[NPROC];  // Array for ALL processes
+    struct proc *p;
+    uint64 addr;
+    int i = 0;
+    
+    argaddr(0, &addr);
+    
+    // Fill array with ALL processes
+    for(p = proc; p < &proc[NPROC]; p++){
+        acquire(&p->lock);
+        if(p->state != UNUSED){
+            info[i].pid = p->pid;
+            info[i].state = p->state;
+            info[i].cur_q = p->cur_q;
+            info[i].qtick = p->qtick;
+            info[i].total_ticks = p->total_ticks;
+            safestrcpy(info[i].name, p->name, sizeof(info[i].name));
+            i++;
+        }
+        release(&p->lock);
+    }
+    
+    // Copy array to user
+    if(copyout(myproc()->pagetable, addr, (char*)&info, sizeof(struct uprocinfo) * i) < 0) {
+        return -1;
+    }
+    
+    return i;  // Return count
+}
+// sys_boostproc: boost all processes to the top queue
+uint64
+sys_boostproc(void)
+{
+    struct proc *p;
+    
+    // Boost all runnable processes to queue 0
+    for(p = proc; p < &proc[NPROC]; p++){
+        acquire(&p->lock);
+        if(p->state == RUNNABLE || p->state == RUNNING){
+            p->cur_q = 0;
+            p->qtick = 0;
+        }
+        release(&p->lock);
+    }
+    
+    return 0;
+}
+uint64
+sys_sleep(void)
+{
+  int n;
+  uint ticks0;
+
+  argint(0, &n);
+  
+  acquire(&tickslock);
+  ticks0 = ticks;
+  
+  while(ticks - ticks0 < n) {
+    if(myproc()->killed) {
+      release(&tickslock);
+      return -1;
+    }
+    sleep(&ticks, &tickslock);
+  }
+  
+  release(&tickslock);
+  return 0;
+}
+
 uint64
 sys_sigalarm(void)
 {
@@ -89,7 +172,7 @@ sys_sbrk(void)
   argint(1, &t);
   addr = myproc()->sz;
 
-  if(t == SBRK_EAGER || n < 0) {
+  if( n < 0) {
     if(growproc(n) < 0) {
       return -1;
     }

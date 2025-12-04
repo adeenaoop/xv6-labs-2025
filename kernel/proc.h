@@ -1,3 +1,4 @@
+struct spinlock;
 // Saved registers for kernel context switches.
 struct context {
   uint64 ra;
@@ -111,4 +112,11 @@ struct proc {
   uint64 alarm_handler;     // user-space handler pointer 
   int inhandler;            // 1 if currently running handler (prevents reentrancy)
   struct trapframe alarm_tf; // saved user trapframe when alarm handler invoked
+
+  int cur_q;               // current queue (0..NUM_QUEUES-1)
+  int qtick;               // ticks used within current quantum
+  int total_ticks;         // total ticks consumed
+  struct proc *mlfq_next;  // link for ready queues
+
+
 };

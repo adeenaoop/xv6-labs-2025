@@ -184,10 +184,16 @@ UPROGS=\
 	$U/_grep\
 	$U/_init\
 	$U/_kill\
+	$U/_infinite_cpu\
+	$U/_slow_cpu\
 	$U/_ln\
 	$U/_ls\
 	$U/_mkdir\
-        $U/_checkimp\
+	$U/_getprocinfo\
+	$U/_cpu_bound\
+	$U/_io_bound\
+	$U/_boosttest\
+	$U/_checkimp\
 	$U/_rm\
 	$U/_sh\
 	$U/_stressfs\
@@ -198,8 +204,7 @@ UPROGS=\
 	$U/_logstress\
 	$U/_forphan\
 	$U/_dorphan\
-
-
+	$U/_simpletest\
 
 ifeq ($(LAB),util)
 UPROGS += \
